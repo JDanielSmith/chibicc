@@ -389,26 +389,27 @@ static char *create_tmpfile(void) {
 }
 
 static void run_subprocess(char **argv) {
-  // If -### is given, dump the subprocess's command line.
-  if (opt_hash_hash_hash) {
-    fprintf(stderr, "%s", argv[0]);
-    for (int i = 1; argv[i]; i++)
-      fprintf(stderr, " %s", argv[i]);
-    fprintf(stderr, "\n");
-  }
+    fprintf(stderr, "no run_subprocess()\n");
+  //// If -### is given, dump the subprocess's command line.
+  //if (opt_hash_hash_hash) {
+  //  fprintf(stderr, "%s", argv[0]);
+  //  for (int i = 1; argv[i]; i++)
+  //    fprintf(stderr, " %s", argv[i]);
+  //  fprintf(stderr, "\n");
+  //}
 
-  if (fork() == 0) {
-    // Child process. Run a new command.
-    execvp(argv[0], argv);
-    fprintf(stderr, "exec failed: %s: %s\n", argv[0], strerror(errno));
-    _exit(1);
-  }
+  //if (fork() == 0) {
+  //  // Child process. Run a new command.
+  //  execvp(argv[0], argv);
+  //  fprintf(stderr, "exec failed: %s: %s\n", argv[0], strerror(errno));
+  //  _exit(1);
+  //}
 
-  // Wait for the child process to finish.
-  int status;
-  while (wait(&status) > 0);
-  if (status != 0)
-    exit(1);
+  //// Wait for the child process to finish.
+  //int status;
+  //while (wait(&status) > 0);
+  //if (status != 0)
+  //  exit(1);
 }
 
 static void run_cc1(int argc, char **argv, char *input, char *output) {
@@ -568,17 +569,16 @@ static void cc1(void) {
 }
 
 static void assemble(char *input, char *output) {
-  char *cmd[] = {"as", "-c", input, "-o", output, NULL};
-  run_subprocess(cmd);
+    fprintf(stderr, "No assemble()\n");
 }
 
 static char *find_file(char *pattern) {
   char *path = NULL;
-  glob_t buf = {};
-  glob(pattern, 0, NULL, &buf);
-  if (buf.gl_pathc > 0)
-    path = strdup(buf.gl_pathv[buf.gl_pathc - 1]);
-  globfree(&buf);
+  //glob_t buf = {};
+  //glob(pattern, 0, NULL, &buf);
+  //if (buf.gl_pathc > 0)
+  //  path = strdup(buf.gl_pathv[buf.gl_pathc - 1]);
+  //globfree(&buf);
   return path;
 }
 

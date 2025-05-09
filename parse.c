@@ -1030,7 +1030,7 @@ static void designation(Token **rest, Token *tok, Initializer *init) {
     int begin, end;
     array_designator(&tok, tok, init->ty, &begin, &end);
 
-    Token *tok2;
+    Token *tok2=NULL;
     for (int i = begin; i <= end; i++)
       designation(&tok2, tok, init->children[i]);
     array_initializer2(rest, tok2, init, begin + 1);
@@ -1115,7 +1115,7 @@ static void array_initializer1(Token **rest, Token *tok, Initializer *init) {
       int begin, end;
       array_designator(&tok, tok, init->ty, &begin, &end);
 
-      Token *tok2;
+      Token *tok2=NULL;
       for (int j = begin; j <= end; j++)
         designation(&tok2, tok, init->children[j]);
       tok = tok2;
