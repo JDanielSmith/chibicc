@@ -42,7 +42,7 @@ typedef Token *macro_handler_fn(Token *);
 
 typedef struct Macro Macro;
 struct Macro {
-  char *name;
+  const char *name;
   bool is_objlike; // Object-like or function-like
   MacroParam *params;
   char *va_args_name;
@@ -118,7 +118,7 @@ static Hideset *hideset_union(Hideset *hs1, Hideset *hs2) {
   return head.next;
 }
 
-static bool hideset_contains(Hideset *hs, char *s, int len) {
+static bool hideset_contains(Hideset *hs, const char *s, int len) {
   for (; hs; hs = hs->next)
     if (strlen(hs->name) == len && !strncmp(hs->name, s, len))
       return true;
@@ -218,8 +218,8 @@ static char *quote_string(char *str) {
   return buf;
 }
 
-static Token *new_str_token(char *str, Token *tmpl) {
-  char *buf = quote_string(str);
+static Token *new_str_token(const char *str, Token *tmpl) {
+  const char *buf = quote_string(str);
   return tokenize(new_file(tmpl->file->name, tmpl->file->file_no, buf));
 }
 
@@ -323,7 +323,7 @@ static Macro *find_macro(Token *tok) {
   return hashmap_get2(&macros, tok->loc, tok->len);
 }
 
-static Macro *add_macro(char *name, bool is_objlike, Token *body) {
+static Macro *add_macro(const char *name, bool is_objlike, Token *body) {
   Macro *m = calloc(1, sizeof(Macro));
   m->name = name;
   m->is_objlike = is_objlike;
@@ -332,7 +332,7 @@ static Macro *add_macro(char *name, bool is_objlike, Token *body) {
   return m;
 }
 
-static MacroParam *read_macro_params(Token **rest, Token *tok, char **va_args_name) {
+static MacroParam *read_macro_params(Token **rest, Token *tok, const char **va_args_name) {
   MacroParam head = {};
   MacroParam *cur = &head;
 
@@ -682,12 +682,12 @@ static bool expand_macro(Token **rest, Token *tok) {
   return true;
 }
 
-char *search_include_paths(char *filename) {
+const char *search_include_paths(const char *filename) {
   if (filename[0] == '/')
     return filename;
 
   static HashMap cache;
-  char *cached = hashmap_get(&cache, filename);
+  const char *cached = hashmap_get(&cache, filename);
   if (cached)
     return cached;
 
@@ -713,7 +713,7 @@ static char *search_include_next(char *filename) {
 }
 
 // Read an #include argument.
-static char *read_include_filename(Token **rest, Token *tok, bool *is_dquote) {
+static const char *read_include_filename(Token **rest, Token *tok, bool *is_dquote) {
   // Pattern 1: #include "foo.h"
   if (tok->kind == TK_STR) {
     // A double-quoted filename for #include is a special kind of
@@ -792,7 +792,7 @@ static char *detect_include_guard(Token *tok) {
   return NULL;
 }
 
-static Token *include_file(Token *tok, char *path, Token *filename_tok) {
+static Token *include_file(Token *tok, const char *path, Token *filename_tok) {
   // Check for "#pragma once"
   if (hashmap_get(&pragma_once, path))
     return tok;
@@ -859,7 +859,7 @@ static Token *preprocess2(Token *tok) {
 
     if (equal(tok, "include")) {
       bool is_dquote;
-      char *filename = read_include_filename(&tok, tok->next, &is_dquote);
+      const char *filename = read_include_filename(&tok, tok->next, &is_dquote);
 
       //if (filename[0] != '/' && is_dquote) {
       //  char *path = format("%s/%s", dirname(strdup(start->file->name)), filename);
@@ -869,15 +869,15 @@ static Token *preprocess2(Token *tok) {
       //  }
       //}
 
-      char *path = search_include_paths(filename);
+      const char *path = search_include_paths(filename);
       tok = include_file(tok, path ? path : filename, start->next->next);
       continue;
     }
 
     if (equal(tok, "include_next")) {
       bool ignore;
-      char *filename = read_include_filename(&tok, tok->next, &ignore);
-      char *path = search_include_next(filename);
+      const char *filename = read_include_filename(&tok, tok->next, &ignore);
+      const char *path = search_include_next(filename);
       tok = include_file(tok, path ? path : filename, start->next->next);
       continue;
     }
@@ -990,16 +990,16 @@ static Token *preprocess2(Token *tok) {
   return head.next;
 }
 
-void define_macro(char *name, char *buf) {
+void define_macro(const char *name, const char *buf) {
   Token *tok = tokenize(new_file("<built-in>", 1, buf));
   add_macro(name, true, tok);
 }
 
-void undef_macro(char *name) {
+void undef_macro(const char *name) {
   hashmap_delete(&macros, name);
 }
 
-static Macro *add_builtin(char *name, macro_handler_fn *fn) {
+static Macro *add_builtin(const char *name, macro_handler_fn *fn) {
   Macro *m = add_macro(name, true, NULL);
   m->handler = fn;
   return m;

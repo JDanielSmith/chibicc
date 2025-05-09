@@ -5,17 +5,17 @@
 
 static FILE *output_file;
 static int depth;
-static char *argreg8[] = {"%dil", "%sil", "%dl", "%cl", "%r8b", "%r9b"};
-static char *argreg16[] = {"%di", "%si", "%dx", "%cx", "%r8w", "%r9w"};
-static char *argreg32[] = {"%edi", "%esi", "%edx", "%ecx", "%r8d", "%r9d"};
-static char *argreg64[] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
+static const char *argreg8[] = {"%dil", "%sil", "%dl", "%cl", "%r8b", "%r9b"};
+static const char *argreg16[] = {"%di", "%si", "%dx", "%cx", "%r8w", "%r9w"};
+static const char *argreg32[] = {"%edi", "%esi", "%edx", "%ecx", "%r8d", "%r9d"};
+static const char *argreg64[] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
 static Obj *current_fn;
 
 static void gen_expr(Node *node);
 static void gen_stmt(Node *node);
 
 __attribute__((format(printf, 1, 2)))
-static void println(char *fmt, ...) {
+static void println(const char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
   vfprintf(output_file, fmt, ap);
@@ -33,7 +33,7 @@ static void push(void) {
   depth++;
 }
 
-static void pop(char *arg) {
+static void pop(const char *arg) {
   println("  pop %s", arg);
   depth--;
 }
@@ -56,7 +56,7 @@ int align_to(int n, int align) {
   return (n + align - 1) / align * align;
 }
 
-static char *reg_dx(int sz) {
+static const char *reg_dx(int sz) {
   switch (sz) {
   case 1: return "%dl";
   case 2: return "%dx";
@@ -66,7 +66,7 @@ static char *reg_dx(int sz) {
   unreachable();
 }
 
-static char *reg_ax(int sz) {
+static const char *reg_ax(int sz) {
   switch (sz) {
   case 1: return "%al";
   case 2: return "%ax";
@@ -208,7 +208,7 @@ static void load(Type *ty) {
     return;
   }
 
-  char *insn = ty->is_unsigned ? "movz" : "movs";
+  const char *insn = ty->is_unsigned ? "movz" : "movs";
 
   // When we load a char or a short value to a register, we always
   // extend them to the size of int, so we can assume the lower half of
@@ -597,8 +597,8 @@ static void copy_ret_buffer(Obj *var) {
       else
         println("  movsd %%xmm%d, %d(%%rbp)", fp, var->offset + 8);
     } else {
-      char *reg1 = (gp == 0) ? "%al" : "%dl";
-      char *reg2 = (gp == 0) ? "%rax" : "%rdx";
+      const char *reg1 = (gp == 0) ? "%al" : "%dl";
+      const char *reg2 = (gp == 0) ? "%rax" : "%rdx";
       for (int i = 8; i < MIN(16, ty->size); i++) {
         println("  mov %s, %d(%%rbp)", reg1, var->offset + i);
         println("  shr $8, %s", reg2);
@@ -637,8 +637,8 @@ static void copy_struct_reg(void) {
       else
         println("  movsd 8(%%rdi), %%xmm%d", fp);
     } else {
-      char *reg1 = (gp == 0) ? "%al" : "%dl";
-      char *reg2 = (gp == 0) ? "%rax" : "%rdx";
+      const char *reg1 = (gp == 0) ? "%al" : "%dl";
+      const char *reg2 = (gp == 0) ? "%rax" : "%rdx";
       println("  mov $0, %s", reg2);
       for (int i = MIN(16, ty->size) - 1; i >= 8; i--) {
         println("  shl $8, %s", reg2);
@@ -1010,7 +1010,7 @@ static void gen_expr(Node *node) {
     gen_expr(node->lhs);
     popf(1);
 
-    char *sz = (node->lhs->ty->kind == TY_FLOAT) ? "ss" : "sd";
+    const char *sz = (node->lhs->ty->kind == TY_FLOAT) ? "ss" : "sd";
 
     switch (node->kind) {
     case ND_ADD:
@@ -1098,7 +1098,7 @@ static void gen_expr(Node *node) {
   gen_expr(node->lhs);
   pop("%rdi");
 
-  char *ax, *di, *dx;
+  const char *ax, *di, *dx;
 
   if (node->lhs->ty->kind == TY_LONG || node->lhs->ty->base) {
     ax = "%rax";
@@ -1235,8 +1235,8 @@ static void gen_stmt(Node *node) {
     gen_expr(node->cond);
 
     for (Node *n = node->case_next; n; n = n->case_next) {
-      char *ax = (node->cond->ty->size == 8) ? "%rax" : "%eax";
-      char *di = (node->cond->ty->size == 8) ? "%rdi" : "%edi";
+      const char *ax = (node->cond->ty->size == 8) ? "%rax" : "%eax";
+      const char *di = (node->cond->ty->size == 8) ? "%rdi" : "%edi";
 
       if (n->begin == n->end) {
         println("  cmp $%ld, %s", n->begin, ax);

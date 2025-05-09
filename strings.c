@@ -1,6 +1,6 @@
 #include "chibicc.h"
 
-void strarray_push(StringArray *arr, char *s) {
+void strarray_push(StringArray *arr, const char *s) {
   if (!arr->data) {
     arr->data = calloc(8, sizeof(char *));
     arr->capacity = 8;
@@ -17,7 +17,7 @@ void strarray_push(StringArray *arr, char *s) {
 }
 
 // Takes a printf-style format string and returns a formatted string.
-char *format(char *fmt, ...) {
+char *format(const char *fmt, ...) {
     static char buf[1024];
 
   //char *buf;

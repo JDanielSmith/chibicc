@@ -3173,7 +3173,7 @@ static void resolve_goto_labels(void) {
   gotos = labels = NULL;
 }
 
-static Obj *find_func(char *name) {
+static Obj *find_func(const char *name) {
   Scope *sc = scope;
   while (sc->next)
     sc = sc->next;

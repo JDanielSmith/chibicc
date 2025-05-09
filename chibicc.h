@@ -36,13 +36,13 @@ typedef struct Hideset Hideset;
 //
 
 typedef struct {
-  char **data;
+  const char **data;
   int capacity;
   int len;
 } StringArray;
 
-void strarray_push(StringArray *arr, char *s);
-char *format(char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void strarray_push(StringArray *arr, const char *s);
+char *format(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 
 //
 // tokenize.c
@@ -60,12 +60,12 @@ typedef enum {
 } TokenKind;
 
 typedef struct {
-  char *name;
+  const char *name;
   int file_no;
-  char *contents;
+  const char *contents;
 
   // For #line directive
-  char *display_name;
+  const char *display_name;
   int line_delta;
 } File;
 
@@ -76,13 +76,13 @@ struct Token {
   Token *next;      // Next token
   int64_t val;      // If kind is TK_NUM, its value
   long double fval; // If kind is TK_NUM, its value
-  char *loc;        // Token location
+  const char *loc;        // Token location
   int len;          // Token length
   Type *ty;         // Used if TK_NUM or TK_STR
   char *str;        // String literal contents including terminating '\0'
 
   File *file;       // Source location
-  char *filename;   // Filename
+  const char *filename;   // Filename
   int line_no;      // Line number
   int line_delta;   // Line number
   bool at_bol;      // True if this token is at beginning of line
@@ -91,19 +91,19 @@ struct Token {
   Token *origin;    // If this is expanded from a macro, the original token
 };
 
-void error(char *fmt, ...) __attribute__((format(printf, 1, 2)));
-void error_at(char *loc, char *fmt, ...) __attribute__((format(printf, 2, 3)));
-void error_tok(Token *tok, char *fmt, ...) __attribute__((format(printf, 2, 3)));
-void warn_tok(Token *tok, char *fmt, ...) __attribute__((format(printf, 2, 3)));
-bool equal(Token *tok, char *op);
-Token *skip(Token *tok, char *op);
-bool consume(Token **rest, Token *tok, char *str);
+void error(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void error_at(const char *loc, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
+void error_tok(Token *tok, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
+void warn_tok(Token *tok, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
+bool equal(Token *tok, const char *op);
+Token *skip(Token *tok, const char *op);
+bool consume(Token **rest, Token *tok, const char *str);
 void convert_pp_tokens(Token *tok);
 File **get_input_files(void);
-File *new_file(char *name, int file_no, char *contents);
+File *new_file(const char *name, int file_no, const char *contents);
 Token *tokenize_string_literal(Token *tok, Type *basety);
 Token *tokenize(File *file);
-Token *tokenize_file(char *filename);
+Token *tokenize_file(const char *filename);
 
 #define unreachable() \
   error("internal error at %s:%d", __FILE__, __LINE__)
@@ -112,10 +112,10 @@ Token *tokenize_file(char *filename);
 // preprocess.c
 //
 
-char *search_include_paths(char *filename);
+const char *search_include_paths(const char *filename);
 void init_macros(void);
-void define_macro(char *name, char *buf);
-void undef_macro(char *name);
+void define_macro(const char *name, const char *buf);
+void undef_macro(const char *name);
 Token *preprocess(Token *tok);
 
 //
@@ -416,17 +416,17 @@ int align_to(int n, int align);
 //
 
 int encode_utf8(char *buf, uint32_t c);
-uint32_t decode_utf8(char **new_pos, char *p);
+uint32_t decode_utf8(const char **new_pos, const char *p);
 bool is_ident1(uint32_t c);
 bool is_ident2(uint32_t c);
-int display_width(char *p, int len);
+int display_width(const char *p, int len);
 
 //
 // hashmap.c
 //
 
 typedef struct {
-  char *key;
+  const char *key;
   int keylen;
   void *val;
 } HashEntry;
@@ -437,19 +437,19 @@ typedef struct {
   int used;
 } HashMap;
 
-void *hashmap_get(HashMap *map, char *key);
-void *hashmap_get2(HashMap *map, char *key, int keylen);
-void hashmap_put(HashMap *map, char *key, void *val);
-void hashmap_put2(HashMap *map, char *key, int keylen, void *val);
-void hashmap_delete(HashMap *map, char *key);
-void hashmap_delete2(HashMap *map, char *key, int keylen);
+void *hashmap_get(HashMap *map, const char *key);
+void *hashmap_get2(HashMap *map, const char *key, int keylen);
+void hashmap_put(HashMap *map, const char *key, void *val);
+void hashmap_put2(HashMap *map, const char *key, int keylen, void *val);
+void hashmap_delete(HashMap *map, const char *key);
+void hashmap_delete2(HashMap *map, const char *key, int keylen);
 void hashmap_test(void);
 
 //
 // main.c
 //
 
-bool file_exists(char *path);
+bool file_exists(const char *path);
 
 extern StringArray include_paths;
 extern bool opt_fpic;

@@ -40,7 +40,7 @@ static void usage(int status) {
 }
 
 static bool take_arg(char *arg) {
-  char *x[] = {
+  const char *x[] = {
     "-o", "-I", "-idirafter", "-include", "-x", "-MF", "-MT", "-Xlinker",
   };
 
@@ -82,7 +82,7 @@ static void define(char *str) {
     define_macro(str, "1");
 }
 
-static FileType parse_opt_x(char *s) {
+static FileType parse_opt_x(const char *s) {
   if (!strcmp(s, "c"))
     return FILE_C;
   if (!strcmp(s, "assembler"))
@@ -92,7 +92,7 @@ static FileType parse_opt_x(char *s) {
   error("<command line>: unknown argument for -x: %s", s);
 }
 
-static char *quote_makefile(char *s) {
+static char *quote_makefile(const char *s) {
   char *buf = calloc(1, strlen(s) * 2 + 1);
 
   for (int i = 0, j = 0; s[i]; i++) {
@@ -366,14 +366,14 @@ static FILE *open_file(char *path) {
   return out;
 }
 
-static bool endswith(char *p, char *q) {
+static bool endswith(const char *p, const char *q) {
   int len1 = strlen(p);
   int len2 = strlen(q);
   return (len1 >= len2) && !strcmp(p + len1 - len2, q);
 }
 
 // Replace file extension
-static char *replace_extn(char *tmpl, char *extn) {
+static char *replace_extn(const char *tmpl, const char *extn) {
   //char *filename = basename(strdup(tmpl));
   //char *dot = strrchr(filename, '.');
   //if (dot)
@@ -423,8 +423,8 @@ static void run_subprocess(char **argv) {
   //  exit(1);
 }
 
-static void run_cc1(int argc, char **argv, char *input, char *output) {
-  char **args = calloc(argc + 10, sizeof(char *));
+static void run_cc1(int argc, const char **argv, const char *input, const char *output) {
+  const char **args = calloc(argc + 10, sizeof(char *));
   memcpy(args, argv, argc * sizeof(char *));
   args[argc++] = "-cc1";
 
@@ -457,9 +457,9 @@ static void print_tokens(Token *tok) {
   fprintf(out, "\n");
 }
 
-static bool in_std_include_path(char *path) {
+static bool in_std_include_path(const char *path) {
   for (int i = 0; i < std_include_paths.len; i++) {
-    char *dir = std_include_paths.data[i];
+    const char *dir = std_include_paths.data[i];
     int len = strlen(dir);
     if (strncmp(dir, path, len) == 0 && path[len] == '/')
       return true;
@@ -506,7 +506,7 @@ static void print_dependencies(void) {
   }
 }
 
-static Token *must_tokenize_file(char *path) {
+static Token *must_tokenize_file(const char *path) {
   Token *tok = tokenize_file(path);
   if (!tok)
     error("%s: %s", path, strerror(errno));
@@ -529,9 +529,9 @@ static void cc1(void) {
 
   // Process -include option
   for (int i = 0; i < opt_include.len; i++) {
-    char *incl = opt_include.data[i];
+    const char *incl = opt_include.data[i];
 
-    char *path;
+    const char *path;
     if (file_exists(incl)) {
       path = incl;
     } else {
@@ -579,11 +579,11 @@ static void cc1(void) {
   //fclose(out);
 }
 
-static void assemble(char *input, char *output) {
+static void assemble(const char *input, const char *output) {
     fprintf(stderr, "No assemble()\n");
 }
 
-static char *find_file(char *pattern) {
+static char *find_file(const char *pattern) {
   char *path = NULL;
   //glob_t buf = {};
   //glob(pattern, 0, NULL, &buf);
@@ -594,7 +594,7 @@ static char *find_file(char *pattern) {
 }
 
 // Returns true if a given file exists.
-bool file_exists(char *path) {
+bool file_exists(const char *path) {
   struct stat st;
   return !stat(path, &st);
 }
@@ -690,7 +690,7 @@ static void run_linker(StringArray *inputs, char *output) {
   run_subprocess(arr.data);
 }
 
-static FileType get_file_type(char *filename) {
+static FileType get_file_type(const char *filename) {
   if (opt_x != FILE_NONE)
     return opt_x;
 
@@ -725,7 +725,7 @@ int main(int argc, char **argv) {
   StringArray ld_args = {};
 
   for (int i = 0; i < input_paths.len; i++) {
-    char *input = input_paths.data[i];
+    const char *input = input_paths.data[i];
 
     if (!strncmp(input, "-l", 2)) {
       strarray_push(&ld_args, input);
