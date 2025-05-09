@@ -861,13 +861,13 @@ static Token *preprocess2(Token *tok) {
       bool is_dquote;
       char *filename = read_include_filename(&tok, tok->next, &is_dquote);
 
-      if (filename[0] != '/' && is_dquote) {
-        char *path = format("%s/%s", dirname(strdup(start->file->name)), filename);
-        if (file_exists(path)) {
-          tok = include_file(tok, path, start->next->next);
-          continue;
-        }
-      }
+      //if (filename[0] != '/' && is_dquote) {
+      //  char *path = format("%s/%s", dirname(strdup(start->file->name)), filename);
+      //  if (file_exists(path)) {
+      //    tok = include_file(tok, path, start->next->next);
+      //    continue;
+      //  }
+      //}
 
       char *path = search_include_paths(filename);
       tok = include_file(tok, path ? path : filename, start->next->next);
@@ -1028,14 +1028,14 @@ static Token *counter_macro(Token *tmpl) {
 // modification time of the current file. E.g.
 // "Fri Jul 24 01:32:50 2020"
 static Token *timestamp_macro(Token *tmpl) {
-  struct stat st;
-  if (stat(tmpl->file->name, &st) != 0)
+  //struct stat st;
+  //if (stat(tmpl->file->name, &st) != 0)
     return new_str_token("??? ??? ?? ??:??:?? ????", tmpl);
 
-  char buf[30];
-  ctime_r(&st.st_mtime, buf);
-  buf[24] = '\0';
-  return new_str_token(buf, tmpl);
+  //char buf[30];
+  //ctime_r(&st.st_mtime, buf);
+  //buf[24] = '\0';
+  //return new_str_token(buf, tmpl);
 }
 
 static Token *base_file_macro(Token *tmpl) {

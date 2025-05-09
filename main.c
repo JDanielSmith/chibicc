@@ -53,7 +53,7 @@ static bool take_arg(char *arg) {
 static void add_default_include_paths(char *argv0) {
   // We expect that chibicc-specific include files are installed
   // to ./include relative to argv[0].
-  strarray_push(&include_paths, format("%s/include", dirname(strdup(argv0))));
+  //strarray_push(&include_paths, format("%s/include", dirname(strdup(argv0))));
 
   // Add standard include paths.
   strarray_push(&include_paths, "/usr/local/include");
@@ -63,6 +63,15 @@ static void add_default_include_paths(char *argv0) {
   // Keep a copy of the standard include paths for -MMD option.
   for (int i = 0; i < include_paths.len; i++)
     strarray_push(&std_include_paths, include_paths.data[i]);
+}
+
+char* strndup(const char* s, size_t n) {
+	char* buf = malloc(n + 1);
+	if (buf == NULL)
+		return NULL;
+	strncpy(buf, s, n);
+	buf[n] = '\0';
+	return buf;
 }
 
 static void define(char *str) {
@@ -365,11 +374,12 @@ static bool endswith(char *p, char *q) {
 
 // Replace file extension
 static char *replace_extn(char *tmpl, char *extn) {
-  char *filename = basename(strdup(tmpl));
-  char *dot = strrchr(filename, '.');
-  if (dot)
-    *dot = '\0';
-  return format("%s%s", filename, extn);
+  //char *filename = basename(strdup(tmpl));
+  //char *dot = strrchr(filename, '.');
+  //if (dot)
+  //  *dot = '\0';
+  //return format("%s%s", filename, extn);
+    return NULL;
 }
 
 static void cleanup(void) {
@@ -378,14 +388,15 @@ static void cleanup(void) {
 }
 
 static char *create_tmpfile(void) {
-  char *path = strdup("/tmp/chibicc-XXXXXX");
-  int fd = mkstemp(path);
-  if (fd == -1)
-    error("mkstemp failed: %s", strerror(errno));
-  close(fd);
+  //char *path = strdup("/tmp/chibicc-XXXXXX");
+  //int fd = mkstemp(path);
+  //if (fd == -1)
+  //  error("mkstemp failed: %s", strerror(errno));
+  //close(fd);
 
-  strarray_push(&tmpfiles, path);
-  return path;
+  //strarray_push(&tmpfiles, path);
+  //return path;
+    return NULL;
 }
 
 static void run_subprocess(char **argv) {
@@ -556,16 +567,16 @@ static void cc1(void) {
   // Open a temporary output buffer.
   char *buf;
   size_t buflen;
-  FILE *output_buf = open_memstream(&buf, &buflen);
+  FILE *output_buf = fopen("temp.txt", "w"); // open_memstream(&buf, &buflen);
 
   // Traverse the AST to emit assembly.
   codegen(prog, output_buf);
   fclose(output_buf);
 
-  // Write the asembly text to a file.
-  FILE *out = open_file(output_file);
-  fwrite(buf, buflen, 1, out);
-  fclose(out);
+  //// Write the asembly text to a file.
+  //FILE *out = open_file(output_file);
+  //fwrite(buf, buflen, 1, out);
+  //fclose(out);
 }
 
 static void assemble(char *input, char *output) {
@@ -597,17 +608,17 @@ static char *find_libpath(void) {
 }
 
 static char *find_gcc_libpath(void) {
-  char *paths[] = {
-    "/usr/lib/gcc/x86_64-linux-gnu/*/crtbegin.o",
-    "/usr/lib/gcc/x86_64-pc-linux-gnu/*/crtbegin.o", // For Gentoo
-    "/usr/lib/gcc/x86_64-redhat-linux/*/crtbegin.o", // For Fedora
-  };
+  //char *paths[] = {
+  //  "/usr/lib/gcc/x86_64-linux-gnu/*/crtbegin.o",
+  //  "/usr/lib/gcc/x86_64-pc-linux-gnu/*/crtbegin.o", // For Gentoo
+  //  "/usr/lib/gcc/x86_64-redhat-linux/*/crtbegin.o", // For Fedora
+  //};
 
-  for (int i = 0; i < sizeof(paths) / sizeof(*paths); i++) {
-    char *path = find_file(paths[i]);
-    if (path)
-      return dirname(path);
-  }
+  //for (int i = 0; i < sizeof(paths) / sizeof(*paths); i++) {
+  //  char *path = find_file(paths[i]);
+  //  if (path)
+  //    return dirname(path);
+  //}
 
   error("gcc library path is not found");
 }
@@ -778,8 +789,8 @@ int main(int argc, char **argv) {
 
     // Compile, assemble and link
     char *tmp1 = create_tmpfile();
-    char *tmp2 = create_tmpfile();
     run_cc1(argc, argv, input, tmp1);
+    char* tmp2 = create_tmpfile();
     assemble(tmp1, tmp2);
     strarray_push(&ld_args, tmp2);
     continue;

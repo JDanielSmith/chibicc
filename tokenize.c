@@ -344,10 +344,10 @@ static bool convert_pp_int(Token *tok) {
 
   // Read a binary, octal, decimal or hexadecimal number.
   int base = 10;
-  if (!strncasecmp(p, "0x", 2) && isxdigit(p[2])) {
+  if (!strncmp(p, "0x", 2) && isxdigit(p[2])) {
     p += 2;
     base = 16;
-  } else if (!strncasecmp(p, "0b", 2) && (p[2] == '0' || p[2] == '1')) {
+  } else if (!strncmp(p, "0b", 2) && (p[2] == '0' || p[2] == '1')) {
     p += 2;
     base = 2;
   } else if (*p == '0') {
@@ -366,7 +366,7 @@ static bool convert_pp_int(Token *tok) {
       startswith(p, "uLL") || startswith(p, "ull")) {
     p += 3;
     l = u = true;
-  } else if (!strncasecmp(p, "lu", 2) || !strncasecmp(p, "ul", 2)) {
+  } else if (!strncmp(p, "lu", 2) || !strncmp(p, "ul", 2)) {
     p += 2;
     l = u = true;
   } else if (startswith(p, "LL") || startswith(p, "ll")) {
@@ -649,9 +649,11 @@ static char *read_file(char *path) {
       return NULL;
   }
 
-  char *buf;
-  size_t buflen;
-  FILE *out = open_memstream(&buf, &buflen);
+  size_t buflen = 1000000;
+  char* buf = malloc(buflen);
+  buf[0] = '\0';
+  //FILE *out = open_memstream(&buf, &buflen);
+  //FILE* out = tmpfile();
 
   // Read the entire file.
   for (;;) {
@@ -659,18 +661,21 @@ static char *read_file(char *path) {
     int n = fread(buf2, 1, sizeof(buf2), fp);
     if (n == 0)
       break;
-    fwrite(buf2, 1, n, out);
+	strncat(buf, buf2, n);
+    //fwrite(buf2, 1, n, out);
   }
 
   if (fp != stdin)
     fclose(fp);
 
   // Make sure that the last line is properly terminated with '\n'.
+  /*
   fflush(out);
   if (buflen == 0 || buf[buflen - 1] != '\n')
     fputc('\n', out);
   fputc('\0', out);
   fclose(out);
+  */
   return buf;
 }
 
